@@ -202,4 +202,6 @@ function parse_options() {
 	print $reconstructed_options
 }
 
-parse_options "$@"
+function watch_wrapper() {
+	watch $(parse_options "$@")
+}
