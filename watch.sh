@@ -31,17 +31,24 @@ function parse_short_options() {
 	options_length=${#options}
 
 	reconstructed_options=""
+	white_space=false
 	options="$options "
 	i=0
 	while [ $i -lt $options_length ]; do
 
-		print "$reconstructed_options"
+		# print "$reconstructed_options"
 		char="${options:i:1}"
 
 		case $char in
 			('n')
 				# first_word="${options%% *}" ... works in case of -n 50 | will NOT work in case of -n50
 				option_value=$(printf "%s " ${options:i+1} | awk '{print $1}') # ... works in case of -n50 | -n 50 | -n      50 | -n  50 -other -optionsi=0
+				if [[ ${options:i+1:1} = " " ]]; then
+					white_space=true
+				fi
+
+				# print "option value : $option_value"
+
 				if  check_interval $option_value 1 ; then 
 					option_value=1
 				fi
@@ -67,15 +74,20 @@ function parse_short_options() {
 				reconstructed_options="$reconstructed_options -e $option_value"
 				break;
 				;;
-			(*)
+			([a-zA-Z])
+				# print "any char short option"
 				reconstructed_options="$reconstructed_options -$char "
-				print "$reconstructed_options"
+				# print "* : $reconstructed_options"
 				((i++))
 				;;
+			(*)
+				((i++))
 		esac
 	done
 
 	print "$reconstructed_options"
+	# print $white_space
+	[[ $white_space = true ]] && return 1 || return 0
 }
 
 
@@ -91,6 +103,7 @@ function parse_options() {
 
 		case "${options[$i]}" in 
 			--*)
+		
 				given_option=${options[$i]#--}
 				given_option="${given_option%%=*}"	
 				
@@ -127,7 +140,10 @@ function parse_options() {
 				((i++))
 				;;
 			-*)
-				given_option=${options[$i]#-}
+				print "options : ${options[$i]}"
+				reconstructed_options="$reconstructed_options $(parse_short_options ${options[$i]#-} ${options[$i+1]})" 
+				print $reconstructed_options
+				((i=i+$?+1))	
 				;;
 			*)
 				reconstructed_options="$reconstructed_options ${options[@]:i} "
