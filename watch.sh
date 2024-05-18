@@ -79,6 +79,92 @@ function parse_short_options() {
 }
 
 
+function parse_options() {
 
+	options=("$@")
 
+	long_options=("interval")
+	reconstructed_options=""
 
+	i=0
+	while [ $i -lt ${#options[@]} ]; do
+
+		case "${options[$i]}" in 
+			--*)
+				given_option=${options[$i]#--}
+				given_option="${given_option%%=*}"	
+				
+				can_have_value=false
+
+				for long_option in ${long_options[@]}; do
+					if [[ $long_option =~ ^"$given_option".*$ ]]; then
+						# print "long option : $long_option"
+						can_have_value=true
+						reconstructed_options="$reconstructed_options --$long_option"
+
+						if [[ "${options[$i]}" =~ =.+ ]]; then
+							given_value="${options[$i]#*=}"
+						else
+							given_value="${options[$i+1]}"
+							((i++))
+						fi
+
+						if [[ $long_option = 'interval' ]]; then
+							if [[ -n $given_value && $(check_interval $given_value 1; echo $?) -eq 0 ]]; then
+                        		given_value=1
+                    		fi
+						fi
+						reconstructed_options="$reconstructed_options $given_value"
+						break
+					fi
+				done
+
+				if [ $can_have_value = false ] ; then
+					reconstructed_options="$reconstructed_options ${options[$i]}" 
+				fi
+
+				reconstructed_options="$reconstructed_options "
+				((i++))
+				;;
+			-*)
+				given_option=${options[$i]#-}
+				;;
+			*)
+				reconstructed_options="$reconstructed_options ${options[@]:i} "
+				break;
+				;;
+		esac
+	done
+
+	print $reconstructed_options
+}
+
+#
+# i=0
+# 24     while [ $i -lt ${#options[@]} ]; do
+# 23
+# 22         # print "${options[$i]} ${options[$i+1]}"
+# 21
+# 20         case "${options[$i]}" in
+# 19             --*)
+# 18                 # NEEDS FIXING WITH --difference=permanent
+# 17                 given_option=${options[$i]#--}
+# 16                 given_option="${given_option%%=*}"
+# 15                 if [[ "${options[$i]}" =~ =.+ ]]; then
+# 14                     given_value="${options[$i]#*=}"
+# 13                 else
+# 12                     given_value="${options[$i+1]}"
+# 11                     ((i++))
+# 10                 fi
+#  9
+#  8                 if [[ "interval" =~ ^"$given_option".*$ ]]; then
+#  7                     # print "$given_option matches with interval and its value is $given_value"
+#  6                     if [[ -n $given_value && $(validate_watch_interval_value $given_value 1; echo $?) -eq 0 ]];
+#  5                         given_value=1
+#  4                     fi
+#  3                     reconstructed_options="$reconstructed_options --$given_option $given_value "
+#  2                 else
+#  1                     reconstructed_options="$reconstructed_options ${options[$i]}"
+#
+#
+#
