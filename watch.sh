@@ -20,12 +20,14 @@ function check_interval() {
 	# The bellow regex matches integers and floats like : 1, 32, 3.2, 0.4 etc
 	# to match improper floats like : .1, .42, 21., 3., +.32, -.32 etc
 	# and also to match special chars like : -., +., ., +, -, . 
-	if [[ $watch_interval =~ ^[-+]?(([0-9]*)?(\.)?([0-9]*)?)$ ]]; then
+	if [[ $watch_interval =~ ^[-+]?(([0-9]*)?((\.)|(,))?([0-9]*)?)$ ]]; then
 		# replace + or - with 0;
 		# because bc throws an error for + or -; 
 		if [[ $watch_interval =~ ^[-+]$ ]]; then 
 			watch_interval=0
 		fi
+		# replace any occurance of `,` with `.` as bc throws an error for `,`.
+		watch_interval="${watch_interval//,/.}"	
 		# remove `+` prefix from numbers because bc throws an error if not : +43 => 43, +.32 => .32, +0. => 0. ;
 		watch_interval=${watch_interval#+}
 		# bc does not throw any errors for `-` prefix, they are parsed as negative integers/floats; 
@@ -202,6 +204,4 @@ function parse_options() {
 	print $reconstructed_options
 }
 
-function watch_wrapper() {
-	watch $(parse_options "$@")
-}
+parse_options "$@"
