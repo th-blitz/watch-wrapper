@@ -1,5 +1,10 @@
 #!/bin/bash
 
+####################################################################################################
+# (C) 2024 Preetham Rakshith                                                                       #          
+# A wrapper for linux watch command to reset watch --interval value.                               # 
+####################################################################################################
+
 MIN_VALUE=1; # The minimum value an interval option can be set. 
 DEFAULT_VALUE=2; # The default value to swap interval with in case of less than the MIN_VALUE.
 
