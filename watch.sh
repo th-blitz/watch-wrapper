@@ -112,15 +112,16 @@ function parse_short_options() {
                 # print "* : $reconstructed_options"
                 ((i++))
                 ;;
-            # MAY REQUIURE WORK HERE :
-            (" ")
-                break;
-                ;;
-            (*)  
-                reconstructed_options="-$1"
-                white_space=false
-                break;
-                ;;
+            
+            ##########   MAY REQUIURE WORK HERE   ########### 
+            (" ")                                           #
+                break;                                      #
+                ;;                                          #
+            (*)                                             # 
+                reconstructed_options="-$1"                 #
+                white_space=false                           #
+                break;                                      #
+                ;;                                          #
         esac
     done
     
@@ -213,4 +214,6 @@ function parse_options() {
     print $reconstructed_options
 }
 
-parse_options "$@"
+function watch_wrapper() {
+    watch $(parse_options "$@") 
+}
