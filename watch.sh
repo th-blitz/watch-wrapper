@@ -112,11 +112,15 @@ function parse_short_options() {
                 # print "* : $reconstructed_options"
                 ((i++))
                 ;;
-            (*) # MAY REQUIURE WORK HERE : 
-                if [[ $char = " " ]]; then
-                    break;
-                fi
-                ((i++))
+            # MAY REQUIURE WORK HERE :
+            (" ")
+                break;
+                ;;
+            (*)  
+                reconstructed_options="-$1"
+                white_space=false
+                break;
+                ;;
         esac
     done
     
