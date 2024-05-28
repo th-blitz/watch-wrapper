@@ -31,7 +31,7 @@ function check_interval() {
         if [[ $watch_interval =~ ^[-+]$ ]]; then 
             watch_interval=0
         fi
-        # replace any occurance of `,` with `.` as bc throws an error for `,`.
+        # replace any occurrence of `,` with `.` as bc throws an error for `,`.
         watch_interval="${watch_interval//,/.}" 
         # remove `+` prefix from numbers because bc throws an error if not : +43 => 43, +.32 => .32, +0. => 0. ;
         watch_interval=${watch_interval#+}
@@ -85,7 +85,7 @@ function parse_short_options() {
                     # If the current value given by the user is less than MIN_VALUE then swap it with a default value.
                     option_value=$DEFAULT_VALUE
                 fi
-                # reconstruct options after swaping n as needed. 
+                # reconstruct options after swapping n as needed. 
                 reconstructed_options="$reconstructed_options -n $option_value"
                 break;
                 ;;
@@ -113,7 +113,7 @@ function parse_short_options() {
                 ((i++))
                 ;;
             
-            ##########   MAY REQUIURE WORK HERE   ########### 
+            ##########   MAY REQUIRE WORK HERE   ########### 
             (" ")                                           #
                 break;                                      #
                 ;;                                          #
