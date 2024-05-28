@@ -16,30 +16,42 @@ function print() {
     printf "%s\n" " "
 }
 
-# check_interval() function to check if `a` is less than `b`.
-# check_interval a b ; returns 0 if a < b else returns 1;
-function check_interval() {
+# lessThanMIN_VALUE() function to check if `a` is less than `b`.
+# lessThanMIN_VALUE a b ; returns 0 if a < b else returns 1;
+function lessThanMIN_VALUE() {
 
     watch_interval=$1
+    min_value=$2
+
     # the following are parsed by watch as valid interval values : 
     # The below regex matches integers and floats like : 1, 32, 3.2, 0.4 etc
     # to match improper floats like : .1, .42, 21., 3., +.32, -.32 etc
     # and also to match special chars like : -., +., ., +, -, . 
     if [[ $watch_interval =~ ^[-+]?(([0-9]*)?((\.)|(,))?([0-9]*)?)$ ]]; then
-        # replace + or - with 0;
-        # because bc throws an error for + or -; 
-        if [[ $watch_interval =~ ^[-+]$ ]]; then 
+
+       # An edge case if watch_interval is just a single character that is either an `+` or a `-`:
+       # watch parses `-n +` as `-n 0`; similarly `-n -` is parsed as `-n 0`;
+       # in this case we need to replace watch_interval with `0` because bc throws an error for just a `+` or a `-` symbol; 
+       # The below regex expression ^[-+]$ is used to test for a SINGLE character in the string matching an optional `+` or `-` symbol. 
+       # ^    : match from the begining of the string.
+       # [-+] : check for either a `+` or a `-` symbol.
+       # $    : end of the string.
+       # the below condition is false if the watch_interval is not an `+` or a `-` symbol i.e. if it is +43, -32, +.32, -.43 etc or any other number.
+       if [[ $watch_interval =~ ^[-+]$ ]]; then 
             watch_interval=0
-        fi
-        # replace any occurrence of `,` with `.` as bc throws an error for `,`.
-        watch_interval="${watch_interval//,/.}" 
-        # remove `+` prefix from numbers because bc throws an error if not : +43 => 43, +.32 => .32, +0. => 0. ;
-        watch_interval=${watch_interval#+}
-        # bc does not throw any errors for `-` prefix, they are parsed as negative integers/floats; 
-        # compare the parsed float/int with MIN_VALUE;
-        if [ $( echo "$watch_interval < $MIN_VALUE" | bc -l ) -eq 1 ]; then
+       fi
+       
+       # replace any occurrence of `,` with `.` as bc throws an error for `,`.
+       watch_interval="${watch_interval//,/.}" 
+
+       # remove `+` prefix from numbers because bc throws an error if not : +43 => 43, +.32 => .32, +0. => 0. ;
+       # bc does not throw any errors for `-` prefix, they are parsed as negative integers/floats; 
+       watch_interval=${watch_interval#+}
+
+       # compare the parsed float/int with MIN_VALUE;
+       if [ $( echo "$watch_interval < $min_value" | bc -l ) -eq 1 ]; then
             return 0
-        fi
+       fi
     fi
     # return 1 if regex does not match strings that are not numbers or numbers that are greater than MIN_VALUE;
     # in this case we let watch handle the strings as it is so that it may throw errors. 
@@ -48,8 +60,6 @@ function check_interval() {
 
 # parse_short_options() function to parse short options for a single word:
 # for example a word like ` -cvhn 0.4 ` will be parsed as ` -c -v -h -n 0.4 `;
-# also can parse words like ` -cv--h-n0.4 ` as ` -c -v -h -n 0.4 ` because such words are parsed as \
-# valid short arguments by watch. 
 function parse_short_options() {
 
     options="$@"
@@ -81,7 +91,7 @@ function parse_short_options() {
                 fi
 
                 # check whether the given -n value is less than the MIN_VALUE
-                if  check_interval $option_value $MIN_VALUE ; then 
+                if  lessThanMIN_VALUE $option_value $MIN_VALUE ; then 
                     # If the current value given by the user is less than MIN_VALUE then swap it with a default value.
                     option_value=$DEFAULT_VALUE
                 fi
@@ -113,15 +123,18 @@ function parse_short_options() {
                 ((i++))
                 ;;
             
-            ##########   MAY REQUIRE WORK HERE   ########### 
-            (" ")                                           #
-                break;                                      #
-                ;;                                          #
-            (*)                                             # 
-                reconstructed_options="-$1"                 #
-                white_space=false                           #
-                break;                                      #
-                ;;                                          #
+            # case to terminate parsing of short commands when we encounter a white space.
+            (" ")                                           
+                break;                                      
+                ;;                                          
+
+            # case to pass short options as it is without change when we encounter any character that is not a valid short option. 
+            # in this case we let watch handle the arguments so that it may throw any errors. 
+            (*)                                              
+                reconstructed_options="-$1"                 
+                white_space=false                           
+                break;                                      
+                ;;                                          
         esac
     done
     
@@ -174,7 +187,7 @@ function parse_options() {
                         
                         # if the long option is an interval then validate it's value and swap as needed. 
                         if [[ $long_option = 'interval' ]]; then
-                            if [[ -n $given_value && $(check_interval $given_value $MIN_VALUE; echo $?) -eq 0 ]]; then
+                            if [[ -n $given_value && $(lessThanMIN_VALUE $given_value $MIN_VALUE; echo $?) -eq 0 ]]; then
                                 given_value=$DEFAULT_VALUE
                             fi
                         fi
@@ -214,6 +227,5 @@ function parse_options() {
     print $reconstructed_options
 }
 
-function watch_wrapper() {
-    watch $(parse_options "$@") 
-}
+watch $(parse_options "$@") 
+
