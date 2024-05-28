@@ -22,7 +22,7 @@ function check_interval() {
 
     watch_interval=$1
     # the following are parsed by watch as valid interval values : 
-    # The bellow regex matches integers and floats like : 1, 32, 3.2, 0.4 etc
+    # The below regex matches integers and floats like : 1, 32, 3.2, 0.4 etc
     # to match improper floats like : .1, .42, 21., 3., +.32, -.32 etc
     # and also to match special chars like : -., +., ., +, -, . 
     if [[ $watch_interval =~ ^[-+]?(([0-9]*)?((\.)|(,))?([0-9]*)?)$ ]]; then
