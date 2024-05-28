@@ -22,7 +22,7 @@ function check_interval() {
 
     watch_interval=$1
     # the following are parsed by watch as valid interval values : 
-    # The bellow regex matches integers and floats like : 1, 32, 3.2, 0.4 etc
+    # The below regex matches integers and floats like : 1, 32, 3.2, 0.4 etc
     # to match improper floats like : .1, .42, 21., 3., +.32, -.32 etc
     # and also to match special chars like : -., +., ., +, -, . 
     if [[ $watch_interval =~ ^[-+]?(([0-9]*)?((\.)|(,))?([0-9]*)?)$ ]]; then
@@ -31,7 +31,7 @@ function check_interval() {
         if [[ $watch_interval =~ ^[-+]$ ]]; then 
             watch_interval=0
         fi
-        # replace any occurance of `,` with `.` as bc throws an error for `,`.
+        # replace any occurrence of `,` with `.` as bc throws an error for `,`.
         watch_interval="${watch_interval//,/.}" 
         # remove `+` prefix from numbers because bc throws an error if not : +43 => 43, +.32 => .32, +0. => 0. ;
         watch_interval=${watch_interval#+}
@@ -85,7 +85,7 @@ function parse_short_options() {
                     # If the current value given by the user is less than MIN_VALUE then swap it with a default value.
                     option_value=$DEFAULT_VALUE
                 fi
-                # reconstruct options after swaping n as needed. 
+                # reconstruct options after swapping n as needed. 
                 reconstructed_options="$reconstructed_options -n $option_value"
                 break;
                 ;;
@@ -113,7 +113,7 @@ function parse_short_options() {
                 ((i++))
                 ;;
             
-            ##########   MAY REQUIURE WORK HERE   ########### 
+            ##########   MAY REQUIRE WORK HERE   ########### 
             (" ")                                           #
                 break;                                      #
                 ;;                                          #
